@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rotating Apps</title>
+<style>
+  :root{
+    --size:min(92vmin,540px);
+    --icon:64px;
+    --bg: linear-gradient(135deg,#ffd1dc,#c9e7ff,#ffe5b4);
+    --photo: url("https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=1200&auto=format&fit=crop"); /* change me if you want */
+  }
+  html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial}
+  .wrap{display:grid;place-items:center;height:100%;background:var(--bg)}
+  .ring{
+    position:relative; width:var(--size); height:var(--size);
+    border-radius:50%; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 20px 60px rgba(0,0,0,.15); overflow:hidden;
+  }
+  .center{
+    position:absolute; inset:12% 12% auto auto; left:12%; top:12%;
+    width:76%; height:76%; border-radius:18px;
+    background: #fff var(--photo) center/cover no-repeat;
+    opacity:.18;
+  }
+  .wheel{position:absolute; inset:0; display:block; animation:spin 18s linear infinite}
+  @keyframes spin{ to{ transform: rotate(360deg) } }
+  .app{
+    --i:0; /* index from 0..N-1 */
+    position:absolute; left:50%; top:50%;
+    width:var(--icon); height:var(--icon);
+    margin:-32px; border-radius:20px; 
+    display:grid; place-items:center;
+    background:#fff; color:#1d1d1f; text-decoration:none; font-weight:600;
+    box-shadow: 0 6px 18px rgba(0,0,0,.15);
+    transform: rotate(calc(var(--i)*1deg)) translate(calc(var(--size)/2.35)) rotate(calc(var(--i)*-1deg));
+    /* we’ll set the degrees inline per item so it spaces nicely */
+  }
+  .app img{width:60%; height:60%; object-fit:contain; pointer-events:none}
+  .label{
+    position:absolute; left:0; right:0; bottom:10px; text-align:center;
+    font-size:13px; color:#1d1d1f; opacity:.85;
+  }
+  .hint{
+    position:absolute; left:0; right:0; bottom:16px; text-align:center;
+    color:#000; background:rgba(255,255,255,.6); display:inline-block; margin:auto;
+    padding:8px 14px; border-radius:20px; font-size:13px; backdrop-filter: blur(6px)
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="ring">
+      <div class="center"></div>
+      <div class="wheel">
+        <!-- TIP: each “app” has a deep link first (works if app installed) then web fallback via JS -->
+        <a class="app" style="--i:0; transform: rotate(0deg) translate(calc(var(--size)/2.35)) rotate(0deg);" href="#" data-app="fb://profile" data-web="https://facebook.com" aria-label="Facebook">
+          <img alt="Facebook" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg">
+        </a>
+        <a class="app" style="--i:45; transform: rotate(45deg) translate(calc(var(--size)/2.35)) rotate(-45deg);" href="#" data-app="tiktok://open" data-web="https://www.tiktok.com" aria-label="TikTok">
+          <img alt="TikTok" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg">
+        </a>
+        <a class="app" style="--i:90; transform: rotate(90deg) translate(calc(var(--size)/2.35)) rotate(-90deg);" href="#" data-app="instagram://app" data-web="https://instagram.com" aria-label="Instagram">
+          <img alt="Instagram" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg">
+        </a>
+        <a class="app" style="--i:135; transform: rotate(135deg) translate(calc(var(--size)/2.35)) rotate(-135deg);" href="#" data-app="youtube://" data-web="https://youtube.com" aria-label="YouTube">
+          <img alt="YouTube" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg">
+        </a>
+        <a class="app" style="--i:180; transform: rotate(180deg) translate(calc(var(--size)/2.35)) rotate(-180deg);" href="#" data-app="whatsapp://send" data-web="https://web.whatsapp.com" aria-label="WhatsApp">
+          <img alt="WhatsApp" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg">
+        </a>
+        <a class="app" style="--i:225; transform: rotate(225deg) translate(calc(var(--size)/2.35)) rotate(-225deg);" href="#" data-app="twitter://timeline" data-web="https://x.com" aria-label="X">
+          <img alt="X" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg">
+        </a>
+        <a class="app" style="--i:270; transform: rotate(270deg) translate(calc(var(--size)/2.35)) rotate(-270deg);" href="#" data-app="yahoo://" data-web="https://yahoo.com" aria-label="Yahoo">
+          <img alt="Yahoo" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/yahoo.svg">
+        </a>
+        <a class="app" style="--i:315; transform: rotate(315deg) translate(calc(var(--size)/2.35)) rotate(-315deg);" href="#" data-app="photos-redirect://" data-web="photos-redirect://" aria-label="Photos">
+          <img alt="Photos" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/apple.svg">
+        </a>
+      </div>
+      <div class="label">Tap an icon to launch</div>
+    </div>
+    <div class="hint">Add to Home Screen from Safari → Share</div>
+  </div>
+
+<script>
+  // Try to open the deep link; if it fails, go to the web URL.
+  function openApp(appUrl, webUrl){
+    let opened = false;
+    const t = Date.now();
+    // Try by setting location to the app URL
+    window.location.href = appUrl;
+    // After 800ms, if still here, go to web fallback
+    setTimeout(()=>{
+      if (Date.now() - t < 1600) window.location.href = webUrl;
+    }, 800);
+  }
+  document.querySelectorAll('.app').forEach(a=>{
+    a.addEventListener('click', e=>{
+      e.preventDefault();
+      openApp(a.dataset.app, a.dataset.web);
+    });
+  });
+</script>
+</body>
+</html>
